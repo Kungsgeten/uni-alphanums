@@ -1,0 +1,8 @@
+#+TITLE:uni-alphanums.el
+
+[[file:uni-alphanums.png]]
+
+Use your A-Z and 0-9 keys to insert a UTF-8 version of that character.
+
+- Use =M-x uni-alphanums-insert= to start inserting characters.
+- Change "font" with =M-x uni-alphanums-set-alphas= or =M-x uni-alphanums-set-nums=.
