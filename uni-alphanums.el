@@ -124,12 +124,9 @@ Chars from this set will be inserted using `uni-alphanums-insert'.")
   (message "Unicode alphanums repeat %s"
            (if uni-alphanums-repeat "on" "off")))
 
-(defun uni-alphanums-insert (char)
-  "Insert the unicode variant of CHAR.
-The variant of A-Z can be changed with `uni-alphanums-set-alphas'.
-The variant of 0-9 can be changed with `uni-alphanums-set-nums'."
-  (interactive "c")
-  (when-let ((base-difference
+(defun uni-alphanums-convert (char)
+  "Get CHAR from `uni-alphanums-nums' or `uni-alphanums-alphas'."
+  (when-let ((char-offset
               (pcase char
                 ;; Small letters
                 ((and (pred (<= ?a))
@@ -158,16 +155,38 @@ The variant of 0-9 can be changed with `uni-alphanums-set-nums'."
                       (pred (>= ?9)))
                  (- (or (plist-get (cdr uni-alphanums-nums) :positive)
                         (error "No :positive found in %s" (car uni-alphanums-nums)))
-                    ?1))
-                ;; Space is inserted as is
-                (32 0)
-                ;; Backspace
-                (127 'bspc))))
-    (if (eq base-difference 'bspc)
-        (delete-char -1)
-      (insert (char-to-string (+ base-difference char))))
-    (if (and uni-alphanums-repeat (called-interactively-p 'any))
-        (call-interactively #'uni-alphanums-insert))))
+                    ?1)))))
+    (+ char-offset char)))
+
+(defun uni-alphanums-convert-string (str)
+  "Get new STR based on `uni-alphanums-nums' or `uni-alphanums-alphas'."
+  (apply #'string
+         (mapcar (lambda (x)
+                   (or (uni-alphanums-convert x) x))
+                 str)))
+
+(defun uni-alphanums-replace-region (beg end)
+  "Do alphanumerical unicode replacement from BEG to END.
+The chars chosen are based on `uni-alphanums-nums' and `uni-alphanums-alphas'."
+  (interactive "r")
+  (let ((new-str (uni-alphanums-convert-string (buffer-substring-no-properties beg end))))
+    (kill-region beg end)
+    (insert new-str)))
+
+(defun uni-alphanums-insert (char)
+  "Insert the unicode variant of CHAR.
+The variant of A-Z can be changed with `uni-alphanums-set-alphas'.
+The variant of 0-9 can be changed with `uni-alphanums-set-nums'."
+  (interactive "c")
+  (if-let ((new-char (uni-alphanums-convert char)))
+      (insert (char-to-string new-char))
+    (or (pcase char
+          ;; Backspace
+          (127 (delete-char -1))
+          ;; Other characters inserted as is
+          (_ (insert (char-to-string char))))))
+  (if (and uni-alphanums-repeat (called-interactively-p 'any))
+      (call-interactively #'uni-alphanums-insert)))
 
 (provide 'uni-alphanums)
 ;;; uni-alphanums.el ends here

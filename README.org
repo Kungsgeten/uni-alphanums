@@ -4,5 +4,6 @@
 
 Use your A-Z and 0-9 keys to insert a UTF-8 version of that character.
 
-- Use =M-x uni-alphanums-insert= to start inserting characters.
+- Use =M-x uni-alphanums-insert= to start inserting characters (=C-g= to quit).
 - Change "font" with =M-x uni-alphanums-set-alphas= or =M-x uni-alphanums-set-nums=.
+- Replace text in selected region with =M-x uni-alphanums-replace-region=.
